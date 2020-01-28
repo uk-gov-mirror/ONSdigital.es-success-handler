@@ -14,11 +14,11 @@ class EnvironSchema(Schema):
 
 
 def lambda_handler(event, context):
-    logger = logging.getLogger("success_handler")
+    logger = logging.getLogger("Success Handler")
     logger.setLevel(10)
     log_message = ''
     error_message = ''
-    current_module = 'success handler'
+    current_module = 'Success Handler'
     run_id = 0
     try:
         schema = EnvironSchema()
