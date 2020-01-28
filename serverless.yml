@@ -27,11 +27,11 @@ custom:
 functions:
   deploy-success-handler:
     name: es_statistical_method_return
-    handler: runtime_error_capture.lambda_handler
+    handler: es_success_handler.lambda_handler
     package:
       individually: true
       include:
-        - runtime_error_capture.py
+        - es_success_handler.py
       exclude:
         - ./**
     layers:
