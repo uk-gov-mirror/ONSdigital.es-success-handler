@@ -8,7 +8,7 @@ from moto import mock_sns, mock_sqs
 import es_success_handler  # noqa E402
 
 
-class TestRuntimeErrorCapture(unittest.TestCase):
+class TestSuccessHandler(unittest.TestCase):
 
     @mock_sns
     @mock_sqs
@@ -22,30 +22,24 @@ class TestRuntimeErrorCapture(unittest.TestCase):
             MessageGroupId="123",
             MessageDeduplicationId="666"
         )
-        sns = boto3.client("sns", region_name="eu-west-2")
-        topic = sns.create_topic(Name="bloo")
-        topic_arn = topic["TopicArn"]
-        with mock.patch.dict(
-                es_success_handler.os.environ,
-                {"sns_topic_arn": topic_arn}
-        ):
-            indata = {
-                  "data": {"lambdaresult": {"success": True}},
-                  "run_id": "moo",
-                  "queue_url": queue_url}
 
-            output = es_success_handler.lambda_handler(indata, "")
-            assert "PASS" in output['resultFlag']
-            error = ''
-            try:
-                sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=10)
-            except Exception as e:
-                error = e.args
-                # Extract e for use in finally block
-                # so if it doesnt throw exception test will fail
-            finally:
+        indata = {
+              "data": {"lambdaresult": {"success": True}},
+              "run_id": "moo",
+              "queue_url": queue_url}
 
-                assert "The specified queue does not exist" in str(error)
+        output = es_success_handler.lambda_handler(indata, "")
+        assert "PASS" in output['resultFlag']
+        error = ''
+        try:
+            sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=10)
+        except Exception as e:
+            error = e.args
+            # Extract e for use in finally block
+            # so if it doesnt throw exception test will fail
+        finally:
+
+            assert "The specified queue does not exist" in str(error)
 
     @mock_sns
     @mock_sqs
@@ -59,30 +53,23 @@ class TestRuntimeErrorCapture(unittest.TestCase):
             MessageGroupId="123",
             MessageDeduplicationId="666"
         )
-        sns = boto3.client("sns", region_name="eu-west-2")
-        topic = sns.create_topic(Name="bloo")
-        topic_arn = topic["TopicArn"]
-        with mock.patch.dict(
-                es_success_handler.os.environ,
-                {"sns_topic_arn": topic_arn}
-        ):
-            indata = {
-                "data": {"lambdaresult": {"success": False}},
-                "run_id": "moo",
-                "queue_url": queue_url}
+        indata = {
+            "data": {"lambdaresult": {"success": False}},
+            "run_id": "moo",
+            "queue_url": queue_url}
 
-            output = es_success_handler.lambda_handler(indata, "")
-            assert "FAIL" in output['resultFlag']
-            error = ''
-            try:
-                sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=10)
-            except Exception as e:
-                error = e.args
-                # Extract e for use in finally block
-                # so if it doesnt throw exception test will fail
-            finally:
+        output = es_success_handler.lambda_handler(indata, "")
+        assert "FAIL" in output['resultFlag']
+        error = ''
+        try:
+            sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=10)
+        except Exception as e:
+            error = e.args
+            # Extract e for use in finally block
+            # so if it doesnt throw exception test will fail
+        finally:
 
-                assert "The specified queue does not exist" in str(error)
+            assert "The specified queue does not exist" in str(error)
 
     @mock_sqs
     def test_marshmallow_raises_exception(self):
@@ -104,20 +91,14 @@ class TestRuntimeErrorCapture(unittest.TestCase):
     def test_catch_method_exception(self):
         # Method
 
-        with mock.patch.dict(
-                es_success_handler.os.environ,
-                {
-                "sns_topic_arn": "Arrgh"
-                 },
-        ):
-            with mock.patch("es_success_handler.EnvironSchema.load") as mocked:
-                mocked.side_effect = Exception("SQS Failure")
-                with unittest.TestCase.assertRaises(
-                        self, exception_classes.LambdaFailure) as exc_info:
-                    es_success_handler.lambda_handler(
-                        {"Cause": "Bad stuff",
-                         "run_id": "moo",
-                         "queue_url": "abc"}, None
-                    )
-                assert "General Error" \
-                       in exc_info.exception.error_message
+        with mock.patch("es_success_handler.EnvironSchema.load") as mocked:
+            mocked.side_effect = Exception("SQS Failure")
+            with unittest.TestCase.assertRaises(
+                    self, exception_classes.LambdaFailure) as exc_info:
+                es_success_handler.lambda_handler(
+                    {"Cause": "Bad stuff",
+                     "run_id": "moo",
+                     "queue_url": "abc"}, None
+                )
+            assert "General Error" \
+                   in exc_info.exception.error_message
