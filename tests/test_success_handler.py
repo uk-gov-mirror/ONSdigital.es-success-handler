@@ -8,7 +8,7 @@ from moto import mock_sns, mock_sqs
 import es_success_handler  # noqa E402
 
 
-class TestRuntimeErrorCapture(unittest.TestCase):
+class TestSuccessHandler(unittest.TestCase):
 
     @mock_sns
     @mock_sqs
