@@ -100,5 +100,5 @@ class TestSuccessHandler(unittest.TestCase):
                      "run_id": "moo",
                      "queue_url": "abc"}, None
                 )
-            assert "General Error" \
+            assert "'Exception'" \
                    in exc_info.exception.error_message

@@ -2,8 +2,7 @@ import json
 import logging
 
 import boto3
-from botocore.exceptions import ClientError
-from es_aws_functions import exception_classes
+from es_aws_functions import exception_classes, general_functions
 from marshmallow import Schema, fields
 
 
@@ -16,7 +15,6 @@ class EnvironSchema(Schema):
 def lambda_handler(event, context):
     logger = logging.getLogger("Success Handler")
     logger.setLevel(10)
-    log_message = ''
     error_message = ''
     current_module = 'Success Handler'
     run_id = 0
@@ -39,42 +37,15 @@ def lambda_handler(event, context):
 
         jsonresponse = """ {"resultFlag": \"""" + str(outcome)\
                        + """\", "id": \"""" + run_id + """\"}"""
-
-    except ClientError as e:
-        error_message = ("AWS Error in ("
-                         + str(e.response["Error"]["Code"]) + ") "
-                         + current_module + " |- "
-                         + str(e.args)
-                         + " | Run_id: " + str(run_id))
-
-        log_message = error_message + " | Line: " + str(e.__traceback__.tb_lineno)
-
-    except KeyError as e:
-        error_message = ("Key Error in "
-                         + current_module + " |- "
-                         + str(e.args)
-                         + " | Run_id: " + str(run_id)
-                         )
-
-        log_message = error_message + " | Line: " + str(e.__traceback__.tb_lineno)
-
-    except ValueError as e:
-        error_message = ("Blank or empty environment variable in "
-                         + current_module + " |- "
-                         + str(e.args)
-                         + " | Run_id: " + str(run_id))
-
-        log_message = error_message + " | Line: " + str(e.__traceback__.tb_lineno)
+        jsonresponse = json.loads(jsonresponse)
     except Exception as e:
-        error_message = ("General Error in "
-                         + current_module + " ("
-                         + str(type(e)) + ") |- "
-                         + str(e.args)
-                         + " | Run_id: " + str(run_id))
-
-        log_message = error_message + " | Line: " + str(e.__traceback__.tb_lineno)
+        error_message = general_functions.handle_exception(e, current_module,
+                                                           run_id, context)
     finally:
         if (len(error_message)) > 0:
-            logger.error(log_message)
+            logger.error(error_message)
             raise exception_classes.LambdaFailure(error_message)
-    return json.loads(jsonresponse)
+
+    logger.info("Successfully completed module: " + current_module)
+
+    return jsonresponse
