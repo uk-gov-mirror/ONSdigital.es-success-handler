@@ -19,21 +19,20 @@ def lambda_handler(event, context):
     current_module = 'Success Handler'
     run_id = 0
     try:
+        run_id = event['run_id']
         schema = EnvironSchema()
         config, errors = schema.load(event)
         if errors:
-            raise ValueError(f"Error validating environment params: {errors}")
+            raise ValueError(f"Error validating environment parameters: {errors}")
 
         queue_url = config['queue_url']
-        run_id = config['run_id']
+
         sqs = boto3.client('sqs', region_name='eu-west-2')
 
         # now delete the queue
         sqs.delete_queue(QueueUrl=queue_url)
-        if config['data']['lambdaresult']['success'] is True:
-            outcome = 'PASS'
-        else:
-            outcome = 'FAIL'
+
+        outcome = 'PASS'
 
         jsonresponse = """ {"resultFlag": \"""" + str(outcome)\
                        + """\", "id": \"""" + run_id + """\"}"""
