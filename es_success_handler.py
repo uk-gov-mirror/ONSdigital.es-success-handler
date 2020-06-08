@@ -3,36 +3,45 @@ import logging
 
 import boto3
 from es_aws_functions import exception_classes, general_functions
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
 
 
-class EnvironSchema(Schema):
+class RuntimeSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
+    def handle_error(self, e, data, **kwargs):
+        logging.error(f"Error validating runtime params: {e}")
+        raise ValueError(f"Error validating runtime params: {e}")
+
     run_id = fields.Str(required=True)
     queue_url = fields.Str(required=True)
     data = fields.Dict(required=True)
 
 
 def lambda_handler(event, context):
-    logger = logging.getLogger("Success Handler")
+    logger = logging.getLogger("Success Handler.")
     logger.setLevel(10)
     error_message = ''
-    current_module = 'Success Handler'
+    current_module = "Success Handler."
     run_id = 0
     try:
-        run_id = event['run_id']
-        schema = EnvironSchema()
-        config, errors = schema.load(event)
-        if errors:
-            raise ValueError(f"Error validating environment parameters: {errors}")
+        logger.info("Success handler Begun.")
+        run_id = event["run_id"]
 
-        queue_url = config['queue_url']
+        runtime_variables = RuntimeSchema().load(event)
+        logger.info("Validated parameters.")
 
-        sqs = boto3.client('sqs', region_name='eu-west-2')
+        queue_url = runtime_variables["queue_url"]
+        logger.info("Retrieved configuration variables.")
 
-        # now delete the queue
+        # Set up client
+        sqs = boto3.client("sqs", region_name="eu-west-2")
+
+        # Now delete the queue.
         sqs.delete_queue(QueueUrl=queue_url)
 
-        outcome = 'PASS'
+        outcome = "PASS"
 
         jsonresponse = """ {"resultFlag": \"""" + str(outcome)\
                        + """\", "id": \"""" + run_id + """\"}"""
