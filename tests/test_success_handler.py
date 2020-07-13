@@ -1,6 +1,5 @@
 import pytest
 from es_aws_functions import test_generic_library
-from moto import mock_sqs
 
 import es_success_handler as lambda_wrangler_function
 
@@ -47,7 +46,6 @@ def test_key_error(which_lambda, which_environment_variables,
 ##########################################################################################
 
 
-@mock_sqs
 def test_method_pass():
     output = lambda_wrangler_function.lambda_handler(runtime_variables, "")
 
