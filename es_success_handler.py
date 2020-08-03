@@ -5,8 +5,7 @@ from es_aws_functions import exception_classes, general_functions
 
 
 def lambda_handler(event, context):
-    logger = logging.getLogger("Success Handler.")
-    logger.setLevel(10)
+    logger = general_functions.get_logger()
     error_message = ''
     current_module = "Success Handler."
     run_id = 0
