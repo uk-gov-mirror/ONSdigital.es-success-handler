@@ -4,11 +4,9 @@ from es_aws_functions import test_generic_library
 import es_success_handler as lambda_wrangler_function
 
 runtime_variables = {
-              "RuntimeVariables": {},
-              "data": {"lambdaresult": {"success": True}},
-              "run_id": "01201"}
-incomplete_runtime_variables = {
-              "run_id": "01201"}
+              "RuntimeVariables": {"run_id": "01201"},
+              }
+
 ##########################################################################################
 #                                     Generic                                            #
 ##########################################################################################

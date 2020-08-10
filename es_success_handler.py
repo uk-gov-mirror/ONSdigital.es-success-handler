@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     run_id = 0
     try:
         logger.info("Success Handler Begun.")
-        run_id = event["run_id"]
+        run_id = event['RuntimeVariables']["run_id"]
 
         outcome = "PASS"
 
