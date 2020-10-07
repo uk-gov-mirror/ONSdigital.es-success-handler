@@ -47,11 +47,11 @@ def lambda_handler(event, context):
             logger.error(error_message)
             raise exception_classes.LambdaFailure(error_message)
 
+    logger.info("Successfully completed module: " + current_module)
+
     # Send end status to BPM.
     status = "RUN COMPLETE"
-    current_module = "BMI Results Complete"
+    current_module = "BMI Results Processing Complete."
     aws_functions.send_bpm_status(bpm_queue_url, current_module, status, run_id)
-
-    logger.info("Successfully completed module: " + current_module)
 
     return jsonresponse
