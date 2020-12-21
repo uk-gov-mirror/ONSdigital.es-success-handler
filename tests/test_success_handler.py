@@ -7,7 +7,9 @@ import es_success_handler as lambda_wrangler_function
 
 runtime_variables = {
               "RuntimeVariables": {"run_id": "01201",
-                                   "bpm_queue_url": "fake_bpm_queue_url"},
+                                   "bpm_queue_url": "fake_bpm_queue_url",
+                                   "environment": "sandbox",
+                                   "survey": "BMI_SG"},
               }
 
 ##########################################################################################
